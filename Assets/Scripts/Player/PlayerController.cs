@@ -1,65 +1,71 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayerController : MonoBehaviour
+namespace Player
 {
-    [SerializeField] private Camera _camera;
+    [RequireComponent(typeof(CharacterController))]
+    public class PlayerController : MonoBehaviour
+    {
+        [SerializeField] private Camera _camera;
     
-    private CharacterController _controller;
+        private CharacterController _controller;
 
-    private const float _speedScale = 5f,
-        _jumpForce = 8f,
-        _turnSpeed = 90f,
-        _gravityScale = 15f;
+        private const float _speedScale = 5f,
+            _jumpForce = 8f,
+            _turnSpeed = 90f,
+            _gravityScale = 15f;
     
-    private float _verticalSpeed = 0f,
-        _mouseX = 0f,
-        _mouseY = 0f,
-        _currentAngleX = 0f;
+        private float _verticalSpeed = 0f,
+            _mouseX = 0f,
+            _mouseY = 0f,
+            _currentAngleX = 0f;
 
-    private void Awake()
-    {
-        Cursor.visible = false;
-        Cursor.lockState = CursorLockMode.Locked;
-        _controller = GetComponent<CharacterController>();
-    }
-
-    private void Start()
-    {
-        
-    }
-    
-    private void Update()
-    {
-        MoveCharacter();
-        RotateCharacter();
-    }
-    
-    private void RotateCharacter()
-    {
-        _mouseX = Input.GetAxis("Mouse X");
-        _mouseY = Input.GetAxis("Mouse Y");
-        transform.Rotate(new Vector3(0f, _mouseX * _turnSpeed * Time.deltaTime, 0f));
-        _currentAngleX += _mouseY * _turnSpeed * Time.deltaTime * -1f;
-        _currentAngleX = Mathf.Clamp(_currentAngleX, -90f, 90f);
-        _camera.transform.localEulerAngles = new Vector3(_currentAngleX, 0f, 0f);
-    }
-
-    private void MoveCharacter()
-    {
-        var velocity = new Vector3(Input.GetAxis("Horizontal"), 0f, Input.GetAxis("Vertical"));
-        velocity = transform.TransformDirection(velocity) * _speedScale;
-        if (_controller.isGrounded)
+        private void Awake()
         {
-            _verticalSpeed = 0f;
-            if (Input.GetButton("Jump"))
-                _verticalSpeed = _jumpForce;
+            Cursor.visible = false;
+            Cursor.lockState = CursorLockMode.Locked;
+            _controller = GetComponent<CharacterController>();
         }
 
-        _verticalSpeed -= _gravityScale * Time.deltaTime;
-        velocity.y = _verticalSpeed;
-        _controller.Move(velocity * Time.deltaTime);
+        private void Start()
+        {
+        
+        }
+    
+        private void Update()
+        {
+            MoveCharacter();
+            RotateCharacter();
+        }
+    
+        private void RotateCharacter()
+        {
+            _mouseX = Input.GetAxis("Mouse X");
+            _mouseY = Input.GetAxis("Mouse Y");
+            transform.Rotate(new Vector3(0f, _mouseX * _turnSpeed * Time.deltaTime, 0f));
+            _currentAngleX += _mouseY * _turnSpeed * Time.deltaTime * -1f;
+            _currentAngleX = Mathf.Clamp(_currentAngleX, -90f, 90f);
+            _camera.transform.localEulerAngles = new Vector3(_currentAngleX, 0f, 0f);
+        }
+
+        private void MoveCharacter()
+        {
+            var velocity = new Vector3(Input.GetAxis("Horizontal"), 0f, Input.GetAxis("Vertical"));
+            velocity = transform.TransformDirection(velocity) * _speedScale;
+            if (_controller.isGrounded)
+            {
+                _verticalSpeed = 0f;
+                if (Input.GetButton("Jump"))
+                    _verticalSpeed = _jumpForce;
+            }
+
+            _verticalSpeed -= _gravityScale * Time.deltaTime;
+            velocity.y = _verticalSpeed;
+            _controller.Move(velocity * Time.deltaTime);
+        }
+
+        private void OnCollisionEnter(Collision collision)
+        {
+            Debug.Log(collision);
+        }
     }
 }
