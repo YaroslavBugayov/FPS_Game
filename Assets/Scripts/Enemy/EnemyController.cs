@@ -1,49 +1,69 @@
+using System;
+using System.Collections;
+using Interfaces;
+using Player;
 using UnityEngine;
 
 namespace Enemy
 {
-    [RequireComponent(typeof(Rigidbody))]
-    public class EnemyController : MonoBehaviour
+    [RequireComponent(typeof(Rigidbody), typeof(Animator))]
+    public class EnemyController : MonoBehaviour, IAttacker, IDamageable
     {
         [SerializeField] private int _health;
         [SerializeField] private float _enemySpeed;
         [SerializeField] private float _turnSpeed;
+        [SerializeField] private int _damage;
+        [SerializeField] private float _attackRadius;
 
         private Rigidbody _rigidbody;
+        private Animator _animator;
         private Transform _enemy;
-        private Transform _target;
+        private GameObject _target;
+        private bool _isAttack = false;
+        
+        
 
         private void Awake()
         {
             _rigidbody = GetComponent<Rigidbody>();
+            _animator = GetComponent<Animator>();
             _enemy = _rigidbody.transform;
         }
 
         private void Start()
         {
-            _target = GameObject.Find("Player").transform;
+            _target = GameObject.Find("Player");
         }
 
         private void Update()
         {
-            // if (Vector3.Distance(_enemy.position, _target.position) > 4)
-            // {
-                Move();
-            // }
-            // else
-            // {
-                // Attack();
-            // }
+            if (!_isAttack)
+            {
+                if (Vector3.Distance(_enemy.position, _target.transform.position) > 4)
+                {
+                    Move();
+                    _animator.SetBool("IsWalk", true);
+                }
+                else
+                {
+                    StartCoroutine(SetAttack());
+                    _animator.SetBool("IsWalk", false);
+                }
+            }
+            
         }
 
-        private void Attack()
+        private IEnumerator SetAttack()
         {
-            
+            _isAttack = true;
+            _animator.SetTrigger("Attack");
+            yield return new WaitForSeconds(3f);
+            _isAttack = false;
         }
 
         private void Move()
         {
-            var targetDirection = _enemy.position - _target.position;
+            var targetDirection = _enemy.position - _target.transform.position;
             targetDirection = new Vector3(targetDirection.x, 0f, targetDirection.z);
             var singleStep = _turnSpeed * Time.deltaTime;
             // _enemy.forward = -targetDirection.normalized;
@@ -55,6 +75,26 @@ namespace Enemy
                 );
             _enemy.rotation = Quaternion.LookRotation(look);
             _enemy.Translate(Vector3.back * _enemySpeed);
+        }
+
+        public void Attack()
+        {
+            var hitColliders = Physics.OverlapSphere(transform.position, _attackRadius);
+            foreach (var hitCollider in hitColliders)
+            {
+                var target = hitCollider.gameObject.GetComponent<PlayerController>();
+                if (target != null)
+                {
+                    target.TakeDamage(_damage);
+                    Debug.Log(target.name);
+                    break;
+                }
+            }
+        }
+
+        public void TakeDamage(int damage)
+        {
+            _health -= damage;
         }
     }
 }

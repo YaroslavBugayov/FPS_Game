@@ -1,11 +1,14 @@
+using Interfaces;
 using UnityEngine;
 
 namespace Player
 {
     [RequireComponent(typeof(CharacterController))]
-    public class PlayerController : MonoBehaviour
+    public class PlayerController : MonoBehaviour, IAttacker, IDamageable
     {
         [SerializeField] private Camera _camera;
+        [field: SerializeField] public int Health { get; private set; }
+        [SerializeField] private int _damage;
     
         private CharacterController _controller;
 
@@ -61,6 +64,16 @@ namespace Player
             _verticalSpeed -= _gravityScale * Time.deltaTime;
             velocity.y = _verticalSpeed;
             _controller.Move(velocity * Time.deltaTime);
+        }
+
+        public void Attack()
+        {
+            
+        }
+
+        public void TakeDamage(int damage)
+        {
+            Health -= damage;
         }
     }
 }

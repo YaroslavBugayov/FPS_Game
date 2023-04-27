@@ -3514,6 +3514,8 @@ MonoBehaviour:
   _health: 100
   _enemySpeed: 0.01
   _turnSpeed: 2
+  _damage: 5
+  _attackRadius: 4
 --- !u!1 &8756870369409294498
 GameObject:
   m_ObjectHideFlags: 0
