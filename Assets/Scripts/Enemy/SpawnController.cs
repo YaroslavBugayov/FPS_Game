@@ -8,13 +8,13 @@ namespace Enemy
         [SerializeField] private GameObject[] _spawnPoints;
         [SerializeField] private float _swawnSpeedIncreace;
 
-        private float _spawnPeriodicity = 5f;
+        private float _spawnPeriodicity = 3f;
 
         private void Start() => InvokeRepeating(nameof(SpawnEnemy), 0f, 2f);
 
         private void SpawnEnemy()
         {
-            if (Random.Range(0, 40) < _spawnPeriodicity)
+            if (Random.Range(0, 20) < _spawnPeriodicity)
             {
                 Instantiate(_enemies[Random.Range(0, 2)], 
                     _spawnPoints[Random.Range(0, _spawnPoints.Length)].transform.position,

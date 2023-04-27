@@ -62,10 +62,5 @@ namespace Player
             velocity.y = _verticalSpeed;
             _controller.Move(velocity * Time.deltaTime);
         }
-
-        private void OnCollisionEnter(Collision collision)
-        {
-            Debug.Log(collision);
-        }
     }
 }
