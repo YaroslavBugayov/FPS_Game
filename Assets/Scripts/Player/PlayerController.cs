@@ -9,7 +9,8 @@ namespace Player
         [SerializeField] private Camera _camera;
         [field: SerializeField] public int Health { get; private set; }
         [SerializeField] private int _damage;
-    
+        [SerializeField] private UIController _gameUI;
+
         private CharacterController _controller;
 
         private const float _speedScale = 5f,
@@ -74,6 +75,11 @@ namespace Player
         public void TakeDamage(int damage)
         {
             Health -= damage;
+            if (Health < 1)
+            {
+                _gameUI.Death();
+                Time.timeScale = 0;
+            }
         }
     }
 }
