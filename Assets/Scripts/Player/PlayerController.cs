@@ -1,3 +1,7 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using Enemy;
 using Interfaces;
 using UnityEngine;
 
@@ -8,10 +12,18 @@ namespace Player
     {
         [SerializeField] private Camera _camera;
         [field: SerializeField] public int Health { get; private set; }
-        [SerializeField] private int _damage;
         [SerializeField] private UIController _gameUI;
+        [SerializeField] private GameObject[] _weapons;
+        [SerializeField] private GameObject _weaponSlot;
 
+        public int Score { get; set; }
+        
         private CharacterController _controller;
+        private GameObject _currentWeapon;
+        private int _damage = 0;
+        private float _fireRate = 0;
+        private RaycastHit _hit;
+        private float _lastHitTime = 0;
 
         private const float _speedScale = 5f,
             _jumpForce = 8f,
@@ -32,15 +44,33 @@ namespace Player
 
         private void Start()
         {
-        
+            SetWeapon(0);
         }
-    
+
         private void Update()
         {
             MoveCharacter();
             RotateCharacter();
+            
+            if (Input.GetKeyDown("1"))
+                SetWeapon(0);
+
+            if (Input.GetKeyDown("2"))
+                SetWeapon(1);
+
+            if (Input.GetMouseButton(0))
+                Attack();
         }
-    
+
+        private void OnCollisionEnter(Collision collision)
+        {
+            if (collision.gameObject.CompareTag("Heart"))
+            {
+                Health += 5;
+                Destroy(collision.gameObject);
+            }
+        }
+
         private void RotateCharacter()
         {
             _mouseX = Input.GetAxis("Mouse X");
@@ -67,19 +97,43 @@ namespace Player
             _controller.Move(velocity * Time.deltaTime);
         }
 
-        public void Attack()
-        {
-            
-        }
-
         public void TakeDamage(int damage)
         {
             Health -= damage;
             if (Health < 1)
             {
                 _gameUI.Death();
-                Time.timeScale = 0;
             }
         }
+
+        private void SetWeapon(int number)
+        {
+            foreach (Transform weapon in _weaponSlot.transform)
+                Destroy(weapon.gameObject);
+
+            _currentWeapon = Instantiate(_weapons[number], _weaponSlot.transform, false);
+            var currentWeapon = _currentWeapon.GetComponent<Weapon.Weapon>();
+            _damage = currentWeapon.Damage;
+            _fireRate = currentWeapon.FireRate;
+        }
+        
+        public void Attack()
+        {
+            if (Time.time - _lastHitTime > _fireRate)
+            {
+                Physics.Raycast(_camera.transform.position, _camera.transform.forward, out _hit);
+                try
+                {
+                    var hit = _hit.transform.GetComponent<EnemyController>();
+                    hit.TakeDamage(_damage);
+                    _lastHitTime = Time.time;
+                }
+                catch (Exception e)
+                {
+                    // ignored
+                }
+            }
+        }
+
     }
 }

@@ -2,7 +2,9 @@ using System;
 using System.Collections;
 using Interfaces;
 using Player;
+using TMPro;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace Enemy
 {
@@ -14,14 +16,15 @@ namespace Enemy
         [SerializeField] private float _turnSpeed;
         [SerializeField] private int _damage;
         [SerializeField] private float _attackRadius;
+        [SerializeField] private SkinnedMeshRenderer _meshRenderer;
+        [SerializeField] private TMP_Text _healthText;
+        [SerializeField] private int _score;
 
         private Rigidbody _rigidbody;
         private Animator _animator;
         private Transform _enemy;
         private GameObject _target;
         private bool _isAttack = false;
-        
-        
 
         private void Awake()
         {
@@ -33,6 +36,7 @@ namespace Enemy
         private void Start()
         {
             _target = GameObject.Find("Player");
+            _healthText.text = _health.ToString();
         }
 
         private void Update()
@@ -86,7 +90,6 @@ namespace Enemy
                 if (target != null)
                 {
                     target.TakeDamage(_damage);
-                    Debug.Log(target.name);
                     break;
                 }
             }
@@ -95,6 +98,19 @@ namespace Enemy
         public void TakeDamage(int damage)
         {
             _health -= damage;
+            _healthText.text = _health.ToString();
+            if (_health < 1)
+            {
+                if (Random.Range(0, 4) == 0)
+                {
+                    var heart = Resources.Load<GameObject>("Heart");
+                    Instantiate(heart, transform.position, Quaternion.Euler(-90, 0, 0));
+                }
+
+                GameObject.Find("Player").GetComponent<PlayerController>().Score += _score;
+                Destroy(gameObject);
+            }
         }
+        
     }
 }
